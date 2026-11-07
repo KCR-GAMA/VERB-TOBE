@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English A1 - Vocabulary & Grammar</title>
+    <style>
+        /* Tipografía y Reset */
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body, html {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden; /* Cero scroll vertical */
+            font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+            font-size: 22px; /* Mayor a 20px según requerimiento */
+            background-color: #E8F5E9; /* Fondo verde muy claro */
+            color: #1B5E20; /* Texto verde oscuro */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Colores Principales: Verde y Naranja */
+        :root {
+            --green-main: #4CAF50;
+            --green-dark: #2E7D32;
+            --orange-main: #FF9800;
+            --orange-hover: #F57C00;
+            --white: #FFFFFF;
+        }
+
+        /* Contenedor Principal */
+        #app {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Contenedor de las diapositivas */
+        #slides-container {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            height: calc(100% - 80px); /* Resta el espacio de controles */
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out;
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        h1, h2 {
+            color: var(--orange-main);
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        h1 { font-size: 2.5rem; }
+        h2 { font-size: 2rem; }
+
+        /* Controles de Navegación */
+        #controls {
+            height: 80px;
+            background-color: var(--green-dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .btn {
+            background-color: var(--orange-main);
+            color: var(--white);
+            border: none;
+            padding: 12px 24px;
+            font-size: 22px;
+            font-weight: 600;
+            font-family: inherit;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover {
+            background-color: var(--orange-hover);
+            transform: scale(1.05);
+        }
+
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #counter {
+            color: var(--white);
+            font-weight: 800;
+            font-size: 24px;
+        }
+
+        /* --- Estilos Sección Vocabulario --- */
+        .vocab-grid {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .vocab-card {
+            background: var(--white);
+            border: 4px solid var(--green-main);
+            border-radius: 15px;
+            width: 150px;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+        .vocab-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--orange-main);
+            box-shadow: 0 12px 20px rgba(255, 152, 0, 0.3);
+        }
+
+        .emoji { font-size: 4rem; margin-bottom: 10px; }
+        .word { font-weight: 600; color: var(--green-dark); }
+
+        /* --- Estilos Drag & Drop --- */
+        .dd-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            width: 80%;
+            max-width: 900px;
+        }
+
+        .drop-zones, .drag-items {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+        }
+
+        .drop-zone {
+            width: 120px;
+            height: 150px;
+            border: 3px dashed var(--green-main);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 10px;
+            background: rgba(255,255,255,0.5);
+            transition: background 0.3s;
+        }
+        
+        .drop-zone.over {
+            background: #C8E6C9;
+            border-color: var(--orange-main);
+        }
+
+        .drop-emoji { font-size: 3rem; margin-bottom: 10px; pointer-events: none; }
+        
+        .drag-item {
+            background: var(--orange-main);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: grab;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        
+        .drag-item:active { cursor: grabbing; }
+        .drag-item.hidden { opacity: 0; pointer-events: none; }
+
+        .score-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--green-dark);
+            margin-top: 15px;
+            height: 35px;
+        }
+
+        /* --- Estilos Gramática --- */
+        .grammar-board {
+            background: var(--white);
+            border-radius: 15px;
+            border: 4px solid var(--orange-main);
+            padding: 20px;
+            width: 90%;
+            max-width: 1000px;
+            display: flex;
+            gap: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .grammar-col {
+            flex: 1;
+            padding: 15px;
+            border-radius: 10px;
+            background: #F1F8E9;
+        }
+        .grammar-col h3 { color: var(--green-dark); margin-bottom: 10px; border-bottom: 2px solid var(--green-main); padding-bottom: 5px;}
+        .grammar-col p { margin-bottom: 10px; font-size: 1.1rem; line-height: 1.4; }
+        .highlight { color: var(--orange-main); font-weight: 800; }
+
+        /* --- Estilos Quiz Gramática --- */
+        .quiz-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 80%;
+            max-width: 800px;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            border: 3px solid var(--green-main);
+        }
+
+        .question { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #ddd; padding-bottom: 10px;}
+        .question select {
+            font-size: 20px; font-family: inherit; padding: 5px 10px;
+            border: 2px solid var(--orange-main); border-radius: 8px;
+            background: white; color: var(--green-dark); outline: none;
+        }
+        
+        .result-message {
+            font-size: 2rem;
+            color: var(--orange-main);
+            font-weight: bold;
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div id="slides-container">
+        
+        <!-- Diapositiva 1: Inicio -->
+        <div class="slide active" id="slide-1">
+            <h1>English A1</h1>
+            <h2>Vocabulary & Verb "To Be"</h2>
+            <p>Welcome! Click "Siguiente" to start.</p>
+            <p style="font-size: 18px; margin-top:20px; color:var(--green-main);">Make sure your sound is ON 🔊</p>
+        </div>
+
+        <!-- Diapositiva 2: Vocabulario -->
+        <div class="slide" id="slide-2">
+            <h2>Animals Vocabulary</h2>
+            <p style="margin-bottom: 20px;">Click on the cards to hear the pronunciation.</p>
+            <div class="vocab-grid">
+                <div class="vocab-card" onclick="speak('Cat')">
+                    <div class="emoji">🐱</div>
+                    <div class="word">Cat</div>
+                </div>
+                <div class="vocab-card" onclick="speak('Dog')">
+                    <div class="emoji">🐶</div>
+                    <div class="word">Dog</div>
+                </div>
+                <div class="vocab-card" onclick="speak('Fish')">
+                    <div class="emoji">🐟</div>
+                    <div class="word">Fish</div>
+                </div>
+                <div class="vocab-card" onclick="speak('Bird')">
+                    <div class="emoji">🐦</div>
+                    <div class="word">Bird</div>
+                </div>
+                <div class="vocab-card" onclick="speak('Turtle')">
+                    <div class="emoji">🐢</div>
+                    <div class="word">Turtle</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diapositiva 3: Actividad Vocabulario -->
+        <div class="slide" id="slide-3">
+            <h2>Activity: Drag & Drop</h2>
+            <p style="margin-bottom: 15px; font-size: 20px;">Drag the word to the correct image. (1 attempt only!)</p>
+            
+            <div class="dd-container">
+                <div class="drop-zones" id="drop-zones-container">
+                    <div class="drop-zone" data-animal="Dog"><div class="drop-emoji">🐶</div></div>
+                    <div class="drop-zone" data-animal="Turtle"><div class="drop-emoji">🐢</div></div>
+                    <div class="drop-zone" data-animal="Cat"><div class="drop-emoji">🐱</div></div>
+                    <div class="drop-zone" data-animal="Bird"><div class="drop-emoji">🐦</div></div>
+                    <div class="drop-zone" data-animal="Fish"><div class="drop-emoji">🐟</div></div>
+                </div>
+                <div class="drag-items" id="drag-items-container">
+                    <div class="drag-item" draggable="true" id="drag-cat">Cat</div>
+                    <div class="drag-item" draggable="true" id="drag-fish">Fish</div>
+                    <div class="drag-item" draggable="true" id="drag-dog">Dog</div>
+                    <div class="drag-item" draggable="true" id="drag-turtle">Turtle</div>
+                    <div class="drag-item" draggable="true" id="drag-bird">Bird</div>
+                </div>
+            </div>
+            
+            <button class="btn" style="margin-top:20px;" id="check-dd-btn" onclick="checkDragDrop()">Submit Answers</button>
+            <div class="score-display" id="dd-score"></div>
+        </div>
+
+        <!-- Diapositiva 4: Gramática -->
+        <div class="slide" id="slide-4">
+            <h2>Grammar: Verb "To Be"</h2>
+            <p style="margin-bottom: 15px;">We use the verb to be to describe animals and things.</p>
+            
+            <div class="grammar-board">
+                <div class="grammar-col">
+                    <h3>✅ Affirmative (+)</h3>
+                    <p>I <span class="highlight">am</span> a cat. 🐱</p>
+                    <p>It <span class="highlight">is</span> a dog. 🐶</p>
+                    <p>They <span class="highlight">are</span> birds. 🐦</p>
+                </div>
+                <div class="grammar-col">
+                    <h3>❌ Negative (-)</h3>
+                    <p>I <span class="highlight">am not</span> a fish. 🐟</p>
+                    <p>It <span class="highlight">is not</span> a turtle. 🐢</p>
+                    <p>They <span class="highlight">are not</span> cats. 🐱</p>
+                </div>
+                <div class="grammar-col">
+                    <h3>❓ Interrogative (?)</h3>
+                    <p><span class="highlight">Am</span> I a dog? 🐶</p>
+                    <p><span class="highlight">Is</span> it a bird? 🐦</p>
+                    <p><span class="highlight">Are</span> they fish? 🐟</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diapositiva 5: Actividad Gramática -->
+        <div class="slide" id="slide-5">
+            <h2>Grammar Quiz</h2>
+            <p style="margin-bottom: 15px;">Choose the correct option. (1 attempt only!)</p>
+            
+            <div class="quiz-container">
+                <div class="question">
+                    <span>1. It ____ a cat. 🐱</span>
+                    <select id="q1"><option value="">--</option><option value="is">is</option><option value="are">are</option></select>
+                </div>
+                <div class="question">
+                    <span>2. ____ they turtles? 🐢</span>
+                    <select id="q2"><option value="">--</option><option value="Are">Are</option><option value="Is">Is</option></select>
+                </div>
+                <div class="question">
+                    <span>3. I ____ a bird. 🐦</span>
+                    <select id="q3"><option value="">--</option><option value="am">am</option><option value="is">is</option></select>
+                </div>
+                <div class="question">
+                    <span>4. It is ____ a fish. 🐟</span>
+                    <select id="q4"><option value="">--</option><option value="not">not</option><option value="no">no</option></select>
+                </div>
+                <div class="question">
+                    <span>5. They ____ dogs. 🐶</span>
+                    <select id="q5"><option value="">--</option><option value="am">am</option><option value="are">are</option></select>
+                </div>
+            </div>
+            
+            <button class="btn" style="margin-top:20px;" id="check-quiz-btn" onclick="checkQuiz()">Check Answers</button>
+            <div class="score-display" id="quiz-score"></div>
+        </div>
+
+        <!-- Diapositiva 6: Final -->
+        <div class="slide" id="slide-6">
+            <h1>Congratulations! 🎉</h1>
+            <h2>You finished the lesson.</h2>
+            <div class="result-message" id="final-results"></div>
+        </div>
+
+    </div>
+
+    <!-- Controles -->
+    <div id="controls">
+        <button class="btn" id="btn-prev" onclick="changeSlide(-1)">Anterior</button>
+        <span id="counter">1 / 6</span>
+        <button class="btn" id="btn-next" onclick="changeSlide(1)">Siguiente</button>
+    </div>
+</div>
+
+<script>
+    // Variables Globales
+    let currentSlide = 1;
+    const totalSlides = 6;
+    
+    // Estado de intentos (Para garantizar solo 1 intento)
+    let ddAttempted = false;
+    let quizAttempted = false;
+    let ddScoreVal = 0;
+    let quizScoreVal = 0;
+
+    // Navegación
+    function updateNav() {
+        // Ocultar todas las slides
+        document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+        // Mostrar la actual
+        document.getElementById('slide-' + currentSlide).classList.add('active');
+        
+        // Actualizar contador
+        document.getElementById('counter').innerText = `${currentSlide} / ${totalSlides}`;
+        
+        // Botones de estado
+        document.getElementById('btn-prev').disabled = currentSlide === 1;
+        document.getElementById('btn-next').disabled = currentSlide === totalSlides;
+
+        // Mostrar resultados finales si es la última diapositiva
+        if(currentSlide === totalSlides) {
+            document.getElementById('final-results').innerHTML = 
+                `Vocab Score: ${ddScoreVal}/100 <br> Grammar Score: ${quizScoreVal}/100`;
+        }
+    }
+
+    function changeSlide(direction) {
+        currentSlide += direction;
+        if (currentSlide < 1) currentSlide = 1;
+        if (currentSlide > totalSlides) currentSlide = totalSlides;
+        updateNav();
+    }
+
+    // Audio (API nativa offline)
+    function speak(word) {
+        if ('speechSynthesis' in window) {
+            // Cancelar audios pendientes para que no se encimen
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.9; // Un poco más lento para nivel A1
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
+    // --- Drag and Drop Logic ---
+    const dragItems = document.querySelectorAll('.drag-item');
+    const dropZones = document.querySelectorAll('.drop-zone');
+    let draggedItem = null;
+
+    dragItems.forEach(item => {
+        item.addEventListener('dragstart', function(e) {
+            if(ddAttempted) return e.preventDefault();
+            draggedItem = this;
+            setTimeout(() => this.style.opacity = '0.5', 0);
+        });
+
+        item.addEventListener('dragend', function() {
+            if(ddAttempted) return;
+            setTimeout(() => this.style.opacity = '1', 0);
+            draggedItem = null;
+        });
+    });
+
+    dropZones.forEach(zone => {
+        zone.addEventListener('dragover', function(e) {
+            e.preventDefault(); // Necesario para permitir el drop
+            if(!ddAttempted && !this.querySelector('.dropped-word')) {
+                this.classList.add('over');
+            }
+        });
+
+        zone.addEventListener('dragleave', function() {
+            this.classList.remove('over');
+        });
+
+        zone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('over');
+            
+            if (!ddAttempted && draggedItem && !this.querySelector('.dropped-word')) {
+                // Mover visualmente
+                const word = draggedItem.innerText;
+                const wordElement = document.createElement('div');
+                wordElement.className = 'dropped-word drag-item';
+                wordElement.innerText = word;
+                wordElement.style.marginTop = '10px';
+                wordElement.style.padding = '5px 10px';
+                wordElement.dataset.word = word;
+                
+                this.appendChild(wordElement);
+                draggedItem.classList.add('hidden'); // Ocultar original
+            }
+        });
+    });
+
+    function checkDragDrop() {
+        if (ddAttempted) return;
+        ddAttempted = true;
+        
+        let correct = 0;
+        dropZones.forEach(zone => {
+            const animalTarget = zone.dataset.animal;
+            const droppedEl = zone.querySelector('.dropped-word');
+            
+            if(droppedEl) {
+                if(droppedEl.dataset.word === animalTarget) {
+                    correct++;
+                    zone.style.borderColor = "#4CAF50"; // Verde = bien
+                    zone.style.background = "#C8E6C9";
+                } else {
+                    zone.style.borderColor = "red"; // Rojo = mal
+                    zone.style.background = "#FFCDD2";
+                }
+            } else {
+                zone.style.borderColor = "red"; // Vació = mal
+            }
+        });
+
+        ddScoreVal = correct * 20; // 5 reactivos = 20 pts cada uno
+        document.getElementById('dd-score').innerText = `Score: ${ddScoreVal} / 100`;
+        
+        // Deshabilitar UI
+        document.getElementById('check-dd-btn').disabled = true;
+        dragItems.forEach(item => item.setAttribute('draggable', 'false'));
+    }
+
+    // --- Grammar Quiz Logic ---
+    function checkQuiz() {
+        if (quizAttempted) return;
+        quizAttempted = true;
+
+        const answers = {
+            q1: 'is',
+            q2: 'Are',
+            q3: 'am',
+            q4: 'not',
+            q5: 'are'
+        };
+
+        let correct = 0;
+
+        for (const [key, value] of Object.entries(answers)) {
+            const selectEl = document.getElementById(key);
+            if (selectEl.value === value) {
+                correct++;
+                selectEl.style.borderColor = "#4CAF50";
+                selectEl.style.backgroundColor = "#C8E6C9";
+            } else {
+                selectEl.style.borderColor = "red";
+                selectEl.style.backgroundColor = "#FFCDD2";
+            }
+            selectEl.disabled = true; // Deshabilitar después del intento
+        }
+
+        quizScoreVal = correct * 20;
+        document.getElementById('quiz-score').innerText = `Score: ${quizScoreVal} / 100`;
+        document.getElementById('check-quiz-btn').disabled = true;
+    }
+
+    // Inicializar
+    updateNav();
+
+</script>
+</body>
+</html>
